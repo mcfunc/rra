@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RRA - Railgun Range Application</title>
+  <style>
+    :root {
+      --bg-dark: #0a0e14;
+      --bg-card: #1a1f2e;
+      --bg-input: #252b3d;
+      --text: #e6e6e6;
+      --text-dim: #8a8f9c;
+      --accent: #00d4aa;
+      --accent-dim: #00a080;
+      --danger: #ff4757;
+      --warning: #ffa502;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--bg-input);
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      color: var(--accent);
+    }
+
+    h1 span {
+      color: var(--text-dim);
+      font-weight: normal;
+      font-size: 0.9rem;
+    }
+
+    .auth-section {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg-dark);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-dim);
+    }
+
+    .btn-secondary {
+      background: var(--bg-input);
+      color: var(--text);
+    }
+
+    .btn-secondary:hover {
+      background: #353b4d;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 25px;
+    }
+
+    .card h2 {
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 12px;
+      background: var(--bg-input);
+      border: 1px solid transparent;
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 1rem;
+    }
+
+    .form-group input:focus, .form-group select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .result-display {
+      text-align: center;
+      padding: 30px 20px;
+      background: var(--bg-input);
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .hit-chance {
+      font-size: 4rem;
+      font-weight: bold;
+      line-height: 1;
+      margin-bottom: 10px;
+    }
+
+    .hit-chance.high {
+      color: var(--accent);
+    }
+
+    .hit-chance.medium {
+      color: var(--warning);
+    }
+
+    .hit-chance.low {
+      color: var(--danger);
+    }
+
+    .hit-label {
+      color: var(--text-dim);
+      font-size: 0.9rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    .stat-item {
+      background: var(--bg-input);
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    .stat-value {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+
+    .range-indicator {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .range-badge {
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+    }
+
+    .range-badge.in-optimal {
+      background: rgba(0, 212, 170, 0.2);
+      color: var(--accent);
+    }
+
+    .range-badge.in-falloff {
+      background: rgba(255, 165, 2, 0.2);
+      color: var(--warning);
+    }
+
+    .range-badge.out-of-range {
+      background: rgba(255, 71, 87, 0.2);
+      color: var(--danger);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      padding: 10px 20px;
+      background: var(--bg-input);
+      border: none;
+      border-radius: 6px 6px 0 0;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab.active {
+      background: var(--bg-card);
+      color: var(--text);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .log-upload {
+      border: 2px dashed var(--bg-input);
+      border-radius: 10px;
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .log-upload:hover {
+      border-color: var(--accent);
+    }
+
+    .log-upload.dragover {
+      border-color: var(--accent);
+      background: rgba(0, 212, 170, 0.05);
+    }
+
+    .log-results {
+      margin-top: 20px;
+    }
+
+    .log-stat {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--bg-input);
+    }
+
+    .log-stat:last-child {
+      border-bottom: none;
+    }
+
+    .weapon-breakdown {
+      margin-top: 20px;
+    }
+
+    .weapon-item {
+      background: var(--bg-input);
+      padding: 12px 15px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+
+    .weapon-name {
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .weapon-stats {
+      display: flex;
+      gap: 20px;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+
+    #character-name {
+      color: var(--accent);
+    }
+
+    .slider-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .slider-container input[type="range"] {
+      flex: 1;
+    }
+
+    .slider-value {
+      min-width: 80px;
+      text-align: right;
+      font-family: monospace;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      height: 6px;
+      background: var(--bg-input);
+      border-radius: 3px;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>RRA <span>Railgun Range Application</span></h1>
+      <div class="auth-section">
+        <span id="character-name"></span>
+        <a href="/auth/login" id="login-btn" class="btn btn-primary" style="display: none;">Login with EVE</a>
+        <a href="/auth/logout" id="logout-btn" class="btn btn-secondary" style="display: none;">Logout</a>
+      </div>
+    </header>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="calculator">Calculator</button>
+      <button class="tab" data-tab="logs">Combat Logs</button>
+    </div>
+
+    <div id="calculator" class="tab-content active">
+      <div class="grid">
+        <div class="card">
+          <h2>Turret Configuration</h2>
+
+          <div class="form-group">
+            <label>Turret Preset</label>
+            <select id="turret-preset">
+              <option value="">Custom</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Tracking Speed (rad/s)</label>
+              <input type="number" id="tracking" value="0.0248" step="0.001" min="0">
+            </div>
+            <div class="form-group">
+              <label>Optimal Range (m)</label>
+              <input type="number" id="optimal" value="36000" step="1000" min="0">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Falloff (m)</label>
+            <input type="number" id="falloff" value="24000" step="1000" min="0">
+          </div>
+
+          <h2 style="margin-top: 30px;">Target</h2>
+
+          <div class="form-group">
+            <label>Signature Preset</label>
+            <select id="sig-preset">
+              <option value="">Custom</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Signature Radius (m)</label>
+            <input type="number" id="signature" value="125" step="5" min="1">
+          </div>
+
+          <div class="form-group">
+            <label>Distance (m): <span id="distance-display">20000</span></label>
+            <div class="slider-container">
+              <input type="range" id="distance" value="20000" min="0" max="100000" step="100">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Transversal Velocity (m/s): <span id="transversal-display">500</span></label>
+            <div class="slider-container">
+              <input type="range" id="transversal" value="500" min="0" max="5000" step="10">
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Hit Analysis</h2>
+
+          <div class="result-display">
+            <div class="hit-chance high" id="hit-chance">100%</div>
+            <div class="hit-label">Chance to Hit</div>
+            <div class="range-indicator" id="range-indicator">
+              <span class="range-badge in-optimal">In Optimal</span>
+            </div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-value" id="angular-velocity">0.025</div>
+              <div class="stat-label">Angular Velocity (rad/s)</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="angular-mrad">25.0</div>
+              <div class="stat-label">Angular Velocity (mrad/s)</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="tracking-component">0.00</div>
+              <div class="stat-label">Tracking Factor</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="range-component">0.00</div>
+              <div class="stat-label">Range Factor</div>
+            </div>
+          </div>
+
+          <div style="margin-top: 25px;">
+            <h2>Max Transversal Calculator</h2>
+            <div class="form-group">
+              <label>Target Hit Chance (%)</label>
+              <input type="number" id="target-hit-chance" value="50" min="1" max="100" step="5">
+            </div>
+            <div class="stat-item" style="margin-top: 15px;">
+              <div class="stat-value" id="max-transversal">0</div>
+              <div class="stat-label">Max transversal (m/s) at current distance for target hit chance</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="logs" class="tab-content">
+      <div class="card">
+        <h2>Combat Log Parser</h2>
+        <p style="color: var(--text-dim); margin-bottom: 20px;">
+          Upload or paste your EVE combat log to analyze hit rates and damage.
+          Logs are located in Documents/EVE/logs/Gamelogs/
+        </p>
+
+        <div class="log-upload" id="log-dropzone">
+          <p>Drop combat log file here or click to upload</p>
+          <input type="file" id="log-file" accept=".txt" style="display: none;">
+        </div>
+
+        <div class="log-results" id="log-results" style="display: none;">
+          <h3 style="margin-bottom: 15px;">Combat Statistics</h3>
+
+          <div class="log-stat">
+            <span>Total Damage Dealt</span>
+            <span id="stat-damage-dealt">0</span>
+          </div>
+          <div class="log-stat">
+            <span>Total Damage Received</span>
+            <span id="stat-damage-received">0</span>
+          </div>
+          <div class="log-stat">
+            <span>Shots Hit</span>
+            <span id="stat-hits">0</span>
+          </div>
+          <div class="log-stat">
+            <span>Shots Missed</span>
+            <span id="stat-misses">0</span>
+          </div>
+          <div class="log-stat">
+            <span>Hit Rate</span>
+            <span id="stat-hit-rate">0%</span>
+          </div>
+          <div class="log-stat">
+            <span>DPS</span>
+            <span id="stat-dps">0</span>
+          </div>
+
+          <div class="weapon-breakdown" id="weapon-breakdown">
+            <h3 style="margin-bottom: 15px;">Weapon Breakdown</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State
+    let presets = { turrets: [], signatures: [], ammo: [] };
+
+    // DOM elements
+    const elements = {
+      tracking: document.getElementById('tracking'),
+      optimal: document.getElementById('optimal'),
+      falloff: document.getElementById('falloff'),
+      signature: document.getElementById('signature'),
+      distance: document.getElementById('distance'),
+      transversal: document.getElementById('transversal'),
+      distanceDisplay: document.getElementById('distance-display'),
+      transversalDisplay: document.getElementById('transversal-display'),
+      hitChance: document.getElementById('hit-chance'),
+      angularVelocity: document.getElementById('angular-velocity'),
+      angularMrad: document.getElementById('angular-mrad'),
+      trackingComponent: document.getElementById('tracking-component'),
+      rangeComponent: document.getElementById('range-component'),
+      rangeIndicator: document.getElementById('range-indicator'),
+      turretPreset: document.getElementById('turret-preset'),
+      sigPreset: document.getElementById('sig-preset'),
+      targetHitChance: document.getElementById('target-hit-chance'),
+      maxTransversal: document.getElementById('max-transversal')
+    };
+
+    // Check auth status
+    async function checkAuth() {
+      try {
+        const res = await fetch('/api/me');
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('character-name').textContent = data.characterName;
+          document.getElementById('logout-btn').style.display = 'inline-block';
+        } else {
+          document.getElementById('login-btn').style.display = 'inline-block';
+        }
+      } catch (e) {
+        // SSO not configured, hide auth buttons
+      }
+    }
+
+    // Load presets
+    async function loadPresets() {
+      try {
+        const res = await fetch('/api/presets');
+        presets = await res.json();
+
+        presets.turrets.forEach(t => {
+          const opt = document.createElement('option');
+          opt.value = JSON.stringify(t);
+          opt.textContent = t.name;
+          elements.turretPreset.appendChild(opt);
+        });
+
+        presets.signatures.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.radius;
+          opt.textContent = `${s.name} (${s.radius}m)`;
+          elements.sigPreset.appendChild(opt);
+        });
+      } catch (e) {
+        console.error('Failed to load presets:', e);
+      }
+    }
+
+    // Calculate and update display
+    async function calculate() {
+      const params = {
+        transversal: parseFloat(elements.transversal.value),
+        distance: parseFloat(elements.distance.value),
+        trackingSpeed: parseFloat(elements.tracking.value),
+        signatureRadius: parseFloat(elements.signature.value),
+        optimalRange: parseFloat(elements.optimal.value),
+        falloff: parseFloat(elements.falloff.value)
+      };
+
+      // Update displays
+      elements.distanceDisplay.textContent = params.distance.toLocaleString();
+      elements.transversalDisplay.textContent = params.transversal.toLocaleString();
+
+      try {
+        const res = await fetch('/api/calculate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(params)
+        });
+
+        const result = await res.json();
+
+        // Update hit chance
+        const hitPct = result.hitChancePercent.toFixed(1);
+        elements.hitChance.textContent = hitPct + '%';
+        elements.hitChance.className = 'hit-chance ' +
+          (result.hitChancePercent >= 70 ? 'high' :
+           result.hitChancePercent >= 30 ? 'medium' : 'low');
+
+        // Update stats
+        elements.angularVelocity.textContent = result.angularVelocity.toFixed(4);
+        elements.angularMrad.textContent = result.angularVelocityMrad.toFixed(2);
+        elements.trackingComponent.textContent = result.trackingComponent.toFixed(3);
+        elements.rangeComponent.textContent = result.rangeComponent.toFixed(3);
+
+        // Update range indicator
+        let rangeHtml = '';
+        if (result.isInOptimal) {
+          rangeHtml = '<span class="range-badge in-optimal">In Optimal</span>';
+        } else if (result.isInFalloff) {
+          rangeHtml = '<span class="range-badge in-falloff">In Falloff</span>';
+        } else {
+          rangeHtml = '<span class="range-badge out-of-range">Out of Range</span>';
+        }
+        elements.rangeIndicator.innerHTML = rangeHtml;
+
+        // Calculate max transversal
+        calculateMaxTransversal();
+      } catch (e) {
+        console.error('Calculation error:', e);
+      }
+    }
+
+    async function calculateMaxTransversal() {
+      const params = {
+        targetHitChance: parseFloat(elements.targetHitChance.value) / 100,
+        distance: parseFloat(elements.distance.value),
+        trackingSpeed: parseFloat(elements.tracking.value),
+        signatureRadius: parseFloat(elements.signature.value),
+        optimalRange: parseFloat(elements.optimal.value),
+        falloff: parseFloat(elements.falloff.value)
+      };
+
+      try {
+        const res = await fetch('/api/max-transversal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(params)
+        });
+
+        const result = await res.json();
+        elements.maxTransversal.textContent =
+          result.maxTransversal === Infinity ? '∞' :
+          Math.round(result.maxTransversal).toLocaleString() + ' m/s';
+      } catch (e) {
+        console.error('Max transversal error:', e);
+      }
+    }
+
+    // Event listeners
+    ['tracking', 'optimal', 'falloff', 'signature', 'distance', 'transversal'].forEach(id => {
+      elements[id].addEventListener('input', calculate);
+    });
+
+    elements.targetHitChance.addEventListener('input', calculateMaxTransversal);
+
+    elements.turretPreset.addEventListener('change', (e) => {
+      if (e.target.value) {
+        const preset = JSON.parse(e.target.value);
+        elements.tracking.value = preset.tracking;
+        elements.optimal.value = preset.optimal;
+        elements.falloff.value = preset.falloff;
+        calculate();
+      }
+    });
+
+    elements.sigPreset.addEventListener('change', (e) => {
+      if (e.target.value) {
+        elements.signature.value = e.target.value;
+        calculate();
+      }
+    });
+
+    // Tabs
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Log file handling
+    const dropzone = document.getElementById('log-dropzone');
+    const fileInput = document.getElementById('log-file');
+
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+    dropzone.addEventListener('dragleave', () => {
+      dropzone.classList.remove('dragover');
+    });
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) {
+        handleLogFile(e.dataTransfer.files[0]);
+      }
+    });
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length) {
+        handleLogFile(e.target.files[0]);
+      }
+    });
+
+    async function handleLogFile(file) {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const res = await fetch('/api/parse-log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: e.target.result
+          });
+
+          const data = await res.json();
+          displayLogStats(data.stats);
+        } catch (err) {
+          console.error('Log parse error:', err);
+        }
+      };
+      reader.readAsText(file, 'utf-16le');
+    }
+
+    function displayLogStats(stats) {
+      document.getElementById('log-results').style.display = 'block';
+      document.getElementById('stat-damage-dealt').textContent = stats.totalDamageDealt.toLocaleString();
+      document.getElementById('stat-damage-received').textContent = stats.totalDamageReceived.toLocaleString();
+      document.getElementById('stat-hits').textContent = stats.shotsHit.toLocaleString();
+      document.getElementById('stat-misses').textContent = stats.shotsMissed.toLocaleString();
+      document.getElementById('stat-hit-rate').textContent = stats.hitRate.toFixed(1) + '%';
+      document.getElementById('stat-dps').textContent = stats.dps ? stats.dps.toFixed(1) : 'N/A';
+
+      // Weapon breakdown
+      const weaponDiv = document.getElementById('weapon-breakdown');
+      let weaponHtml = '<h3 style="margin-bottom: 15px;">Weapon Breakdown</h3>';
+
+      for (const [name, data] of Object.entries(stats.weapons)) {
+        const hitRate = (data.hits + data.misses) > 0
+          ? (data.hits / (data.hits + data.misses) * 100).toFixed(1)
+          : 0;
+        weaponHtml += `
+          <div class="weapon-item">
+            <div class="weapon-name">${name}</div>
+            <div class="weapon-stats">
+              <span>Damage: ${data.damage.toLocaleString()}</span>
+              <span>Hits: ${data.hits}</span>
+              <span>Misses: ${data.misses}</span>
+              <span>Hit Rate: ${hitRate}%</span>
+            </div>
+          </div>
+        `;
+      }
+
+      weaponDiv.innerHTML = weaponHtml;
+    }
+
+    // Initialize
+    checkAuth();
+    loadPresets();
+    calculate();
+  </script>
+</body>
+</html>
